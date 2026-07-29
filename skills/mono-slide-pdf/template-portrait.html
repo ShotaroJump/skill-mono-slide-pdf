@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>スライドタイトルをここに（縦長）</title>
+<style>
+  @page { size: 720px 1280px; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Yu Gothic", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: #ddd;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  :root {
+    --mono-canvas: #F1F0EC;
+    --mono-card:   #FFFFFF;
+    --mono-ink:    #17160F;
+    --mono-sub:    #66655D;
+    --mono-faint:  #9B9A90;
+    --mono-line:   #E8E7E1;
+    --mono-accent: #FF3B1F;      /* 案件のブランドカラーがあればここだけ差し替える */
+    --mono-accent-tint: #FFEFEA;
+  }
+
+  .slide {
+    width: 720px;
+    height: 1280px;
+    background: var(--mono-canvas);
+    color: var(--mono-ink);
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 20px auto;
+    padding: 44px 40px 36px 40px;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+  @media print {
+    .slide { margin: 0; box-shadow: none; }
+    body { background: #fff; }
+  }
+  @media screen {
+    .slide { box-shadow: 0 8px 30px rgba(0,0,0,0.18); margin-top: 20px; }
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--mono-accent);
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mono-accent); }
+
+  h1.title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    line-height: 1.32;
+    flex-shrink: 0;
+  }
+  .subtitle {
+    font-size: 17px;
+    color: var(--mono-sub);
+    margin: 0 0 18px 0;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .rule {
+    height: 1px;
+    background: var(--mono-line);
+    margin: 0 0 18px 0;
+    flex-shrink: 0;
+  }
+
+  .footer {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--mono-faint);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .footer .section-tag { color: var(--mono-sub); }
+
+  /* 残りの縦スペースを埋める領域。厚みのある内容はそのまま伸ばし、
+     薄い内容は .center / .stack でブロックごと中央に寄せる */
+  .content { flex: 1; min-height: 0; }
+  .content.center { display: flex; flex-direction: column; justify-content: center; }
+  .content.stack { display: flex; flex-direction: column; justify-content: space-evenly; gap: 18px; }
+
+  .card {
+    background: var(--mono-card);
+    border: 1px solid var(--mono-line);
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .card.card-center { justify-content: center; }
+  .card.card-highlight { border-width: 2px; border-color: var(--mono-accent); background: var(--mono-accent-tint); }
+
+  .badge-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--mono-accent);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  ul.plain { margin: 0; padding: 0; list-style: none; }
+  ul.plain li {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 10px;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  ul.plain li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mono-faint);
+  }
+  ul.plain li.sub {
+    padding-left: 30px;
+    font-size: 16px;
+    color: var(--mono-sub);
+  }
+  ul.plain li.sub::before { left: 14px; top: 8px; width: 5px; height: 5px; }
+  ul.plain li b { color: var(--mono-ink); }
+
+  .tint-box {
+    background: var(--mono-accent-tint);
+    border-radius: 8px;
+    padding: 11px 16px;
+    font-size: 16px;
+    color: var(--mono-ink);
+    font-weight: 600;
+  }
+
+  /* セクション区切りページ（縦長は装飾数字を控えめに） */
+  .divider-wrap { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .divider-num {
+    font-size: 90px; font-weight: 900; color: var(--mono-line); line-height: 1;
+    position: absolute; right: 36px; top: 32px;
+  }
+  .divider-wrap h1 { font-size: 46px; font-weight: 900; margin: 0 0 16px 0; line-height:1.25; }
+  .divider-wrap p { font-size: 18px; color: var(--mono-sub); line-height: 1.75; }
+
+  /* 縦長は横並びカードが窮屈になりやすいので基本 grid1（縦積み）/ grid2（2列）を使う */
+  .grid1 { display: flex; flex-direction: column; gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .feat-title { font-size: 19px; font-weight: 800; margin: 0 0 8px 0; display:flex; align-items:center; gap:10px; line-height: 1.35; }
+  .feat-body { font-size: 16px; color: var(--mono-sub); line-height: 1.6; margin:0; }
+
+  .link-item { font-size: 17px; color: var(--mono-ink); margin-bottom: 8px; }
+  .link-item a { color: var(--mono-accent); text-decoration: none; font-weight: 600; }
+
+  /* 時系列（縦）：左に軸線とドット、右にカード */
+  .timeline-v { display: flex; flex-direction: column; gap: 22px; position: relative; }
+  .timeline-v::before {
+    content: ""; position: absolute; left: 17px; top: 10px; bottom: 10px; width: 2px; background: var(--mono-line);
+  }
+  .tlv-item { display: flex; gap: 16px; align-items: flex-start; position: relative; }
+  .tlv-dot {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--mono-accent); color: #fff;
+    display:flex; align-items:center; justify-content:center; font-size: 13px; font-weight: 800;
+    flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .tlv-body { flex: 1; min-width: 0; }
+  .tlv-date { font-size: 17px; font-weight: 800; color: var(--mono-sub); margin-bottom: 8px; }
+
+  /* 現状→対応の対比（縦）：上下に積んで↓でつなぐ */
+  .ba-stack { display: flex; flex-direction: column; gap: 12px; }
+  .ba-arrow-v { font-size: 26px; color: var(--mono-accent); font-weight: 800; text-align: center; line-height: 1; }
+
+  /* プロセスフロー（縦）：上から下へ↓でつなぐ */
+  .flow-v { display: flex; flex-direction: column; gap: 12px; }
+  .flow-box {
+    background: var(--mono-card); border:1px solid var(--mono-line);
+    border-radius: 12px; padding: 16px 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    text-align:center;
+  }
+  .flow-box.flow-highlight { border-width: 2px; border-color: var(--mono-accent); background: var(--mono-accent-tint); }
+  .flow-box .ft { font-size: 17px; font-weight: 800; margin-bottom:4px;}
+  .flow-box .fs { font-size: 14px; color: var(--mono-sub); line-height:1.5;}
+  .flow-arrow-v { font-size: 22px; color: var(--mono-accent); font-weight: 900; text-align: center; line-height: 1; }
+
+  .kv-row { display:flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+  .kv-label { font-size: 14px; font-weight: 800; color: var(--mono-accent); }
+  .kv-val { font-size: 17px; line-height: 1.65; }
+
+  .section-block-title { font-size: 19px; font-weight: 800; margin: 0 0 12px 0; display:flex; align-items:center; gap:10px; }
+
+  /* 核心メッセージの強調ボックス */
+  .callout-strong {
+    background: var(--mono-accent-tint); border: 2px solid var(--mono-accent); border-radius: 14px;
+    padding: 18px 20px; font-size: 17px; font-weight: 700; line-height: 1.65; color: var(--mono-ink);
+  }
+  .callout-strong .bracket-hl { color: var(--mono-accent); }
+
+  /* A→Bのマッピング図（縦長は1行に収まりきらないので2段組みにする） */
+  .mapping-row { display:flex; flex-direction: column; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--mono-line); }
+  .mapping-row:last-child { border-bottom: none; }
+  .mapping-row .mr-top { display:flex; align-items:center; gap: 14px; }
+  .bracket-tag {
+    font-size: 17px; font-weight: 800; color: var(--mono-ink); background: var(--mono-canvas);
+    border: 1px solid var(--mono-line); border-radius: 8px; padding: 6px 14px; text-align: center; flex-shrink: 0;
+  }
+  .map-arrow { font-size: 18px; color: var(--mono-faint); font-weight: 800; flex-shrink:0; }
+  .color-badge { display:inline-flex; align-items:center; gap: 8px; font-size: 16px; font-weight: 700; }
+  .color-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink:0; }
+  .map-note { font-size: 14px; color: var(--mono-sub); font-weight: 500; padding-left: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ================= 01 タイトルページ ================= -->
+<div class="slide">
+  <div class="content center">
+    <div class="eyebrow"><span class="dot"></span>資料の種別・日付など</div>
+    <h1 class="title" style="font-size:44px;">資料タイトルを<br>ここに書く</h1>
+    <p class="subtitle" style="font-size:18px; margin-top:14px;">サブタイトルで一言補足する</p>
+    <div style="margin-top:28px; display:flex; gap:10px;">
+      <span class="tint-box">タグ・バッジ</span>
+    </div>
+  </div>
+  <div class="footer"><span>発行元</span><span>1</span></div>
+</div>
+
+<!-- ================= 02 2カードグリッド（grid2）================= -->
+<!-- 縦長は「スライド」ではなく「密なドキュメント」として詰める。content.center で
+     中央に逃がさず、上から自然に流し込む（実案件では 1ページにもっと要素が並ぶ想定） -->
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>セクション名</div>
+  <h1 class="title">スライド見出し</h1>
+  <div class="rule"></div>
+  <div class="content">
+  <div class="grid2">
+    <div class="card">
+      <div class="feat-title"><span class="badge-num">1</span>見出し</div>
+      <ul class="plain" style="margin-top:6px;">
+        <li>箇条書き1行目。</li>
+        <li>箇条書き2行目。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="feat-title"><span class="badge-num">2</span>見出し</div>
+      <ul class="plain" style="margin-top:6px;">
+        <li>箇条書き1行目。</li>
+        <li>箇条書き2行目。</li>
+      </ul>
+    </div>
+  </div>
+  </div>
+  <div class="footer"><span class="section-tag">セクション名</span><span>2</span></div>
+</div>
+
+<!-- ================= 03 縦積みグリッド（grid1）================= -->
+<!-- 横長の grid3/grid4 相当（3〜4項目の横並び）は、縦長では窮屈になるので grid1 で縦に積む -->
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>セクション名</div>
+  <h1 class="title">各種機能・要素の紹介</h1>
+  <div class="rule"></div>
+  <div class="content grid1">
+    <div class="card">
+      <div class="feat-title">📌 見出しA</div>
+      <p class="feat-body">説明文。3〜4項目でも横に並べず、縦に積んで1カラムで見せる。</p>
+    </div>
+    <div class="card">
+      <div class="feat-title">🧵 見出しB</div>
+      <p class="feat-body">説明文。</p>
+    </div>
+    <div class="card card-highlight">
+      <div class="feat-title">📎 特に重要な項目</div>
+      <p class="feat-body" style="color:var(--mono-ink);">強調したい項目は <code>.card-highlight</code> を付ける。</p>
+    </div>
+  </div>
+  <div class="footer"><span class="section-tag">セクション名</span><span>3</span></div>
+</div>
+
+<!-- ================= 04 セクション区切りページ ================= -->
+<div class="slide">
+  <div class="divider-num">01</div>
+  <div class="divider-wrap">
+    <div class="eyebrow"><span class="dot"></span>Section 01</div>
+    <h1>大セクションの<br>タイトル</h1>
+    <p>このセクションで何を扱うかを1〜3文で説明する。</p>
+  </div>
+  <div class="footer"><span class="section-tag">セクション名</span><span>4</span></div>
+</div>
+
+<!-- ================= 05 時系列（timeline-v）================= -->
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>セクション名</div>
+  <h1 class="title">これまでの経緯</h1>
+  <div class="rule"></div>
+  <div class="content">
+    <div class="timeline-v">
+      <div class="tlv-item">
+        <div class="tlv-dot">1月</div>
+        <div class="tlv-body">
+          <div class="tlv-date">できごとの見出し</div>
+          <div class="card">
+            <ul class="plain">
+              <li>できごとの説明。</li>
+              <li class="sub">補足情報。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="tlv-item">
+        <div class="tlv-dot">3月</div>
+        <div class="tlv-body">
+          <div class="tlv-date">できごとの見出し</div>
+          <div class="card">
+            <ul class="plain">
+              <li>できごとの説明。</li>
+              <li class="sub">補足情報。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="tlv-item">
+        <div class="tlv-dot">4月</div>
+        <div class="tlv-body">
+          <div class="tlv-date">できごとの見出し</div>
+          <div class="card">
+            <ul class="plain">
+              <li>できごとの説明。</li>
+              <li class="sub">補足情報。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span class="section-tag">セクション名</span><span>5</span></div>
+</div>
+
+<!-- ================= 06 現状→対応の対比（ba-stack）================= -->
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>セクション名</div>
+  <h1 class="title">今後、対応したほうがいいこと</h1>
+  <p class="subtitle">対応対象の一言サマリ</p>
+  <div class="content center">
+  <div class="ba-stack">
+    <div class="card" style="border-color:var(--mono-line);">
+      <div class="eyebrow" style="color:var(--mono-sub);"><span class="dot" style="background:var(--mono-sub);"></span>現状</div>
+      <ul class="plain">
+        <li><b>何が起こるか</b></li>
+        <li class="sub">現状の課題を説明する。</li>
+        <li class="sub">現状の課題を説明する。</li>
+      </ul>
+    </div>
+    <div class="ba-arrow-v">↓</div>
+    <div class="card card-highlight">
+      <div class="eyebrow"><span class="dot"></span>対応の方向性</div>
+      <p style="font-size:17px; line-height:1.75; margin:0;">結論を1〜3文で書く。<b>強調したいキーワード</b>は太字にする。</p>
+    </div>
+  </div>
+  </div>
+  <div class="footer"><span class="section-tag">セクション名</span><span>6</span></div>
+</div>
+
+<!-- ================= 07 プロセスフロー（flow-v）+ 核心メッセージ + マッピング図 ================= -->
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>セクション名 ・ 補足</div>
+  <h1 class="title">補足ページの見出し</h1>
+  <p class="subtitle" style="margin-bottom:14px;">サブタイトルで一言補足する</p>
+  <div class="rule" style="margin-bottom:16px;"></div>
+
+  <div class="content stack" style="gap:16px;">
+    <div class="callout-strong">
+      これだけは伝えたい核心メッセージ。<span class="bracket-hl">重要な語句</span>はアクセントカラーで強調する。
+    </div>
+
+    <div>
+      <div class="section-block-title"><span class="badge-num">①</span>A→Bのマッピング例</div>
+      <div class="mapping-row">
+        <div class="mr-top">
+          <div class="bracket-tag">条件A</div>
+          <div class="map-arrow">→</div>
+          <div class="color-badge"><span class="color-dot" style="background:#F6BF26;"></span>結果A</div>
+        </div>
+        <div class="map-note">補足コメント</div>
+      </div>
+      <div class="mapping-row">
+        <div class="mr-top">
+          <div class="bracket-tag">条件B</div>
+          <div class="map-arrow">→</div>
+          <div class="color-badge"><span class="color-dot" style="background:#F09300;"></span>結果B</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-block-title"><span class="badge-num">②</span>プロセスの流れ</div>
+      <div class="flow-v">
+        <div class="flow-box">
+          <div class="ft">ステップ1</div>
+          <div class="fs">説明</div>
+        </div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box">
+          <div class="ft">ステップ2</div>
+          <div class="fs">説明</div>
+        </div>
+        <div class="flow-arrow-v">↓</div>
+        <div class="flow-box flow-highlight">
+          <div class="ft">最終ステップ</div>
+          <div class="fs">最も伝えたい結果</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span class="section-tag">セクション名</span><span>7</span></div>
+</div>
+
+<!-- ================= 08 補足・宿題ページ（デッキの一番最後に置く）================= -->
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>資料の種別・日付など</div>
+  <h1 class="title">宿題・補足資料</h1>
+  <div class="rule"></div>
+  <div class="content center">
+  <div class="grid1">
+    <div class="card">
+      <div class="feat-title"><span class="badge-num">1</span>宿題</div>
+      <ul class="plain" style="margin-top:10px;">
+        <li>TODOをここに。</li>
+        <li>TODOをここに。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="feat-title"><span class="badge-num">2</span>補足資料</div>
+      <div class="link-item" style="margin-top:10px;">📺 <a href="#">参考リンクのタイトル</a></div>
+      <div class="link-item" style="color:var(--mono-sub); font-size:15px; margin-top:-4px;">リンクの一言説明</div>
+    </div>
+  </div>
+  </div>
+  <div class="footer"><span class="section-tag">資料の種別</span><span>8</span></div>
+</div>
+
+</body>
+</html>

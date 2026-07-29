@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ドキュメントタイトルをここに（縦長・連続流し込み版）</title>
+<style>
+  /* ============================================================
+     縦長・ドキュメント流し込み版（page-per-topicではなく、docxのように
+     本文が上から連続して流れ、はみ出した分だけ自然に次ページへ続く）。
+     1トピック1ページで区切る template-portrait.html とは別パターン。
+     使い分けはSKILL.mdの「4. 縦長(portrait)の2パターン」参照。
+
+     重要：@page の margin は必ず 0 にし、余白は .doc の padding で作る。
+     @page margin方式は左右幅の計算がブラウザ実装依存になりやすく、
+     「左右の余白が気になる」という指摘を受けてpadding方式に統一した経緯がある。
+     ============================================================ */
+  @page { size: 720px 1280px; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Yu Gothic", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: var(--mono-canvas, #F1F0EC);
+    color: var(--mono-ink, #17160F);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  :root {
+    --mono-canvas: #F1F0EC;
+    --mono-card:   #FFFFFF;
+    --mono-ink:    #17160F;
+    --mono-sub:    #66655D;
+    --mono-faint:  #9B9A90;
+    --mono-line:   #E8E7E1;
+    --mono-accent: #FF3B1F;      /* 案件のブランドカラーがあればここだけ差し替える */
+    --mono-accent-tint: #FFEFEA;
+  }
+
+  .doc { width: 720px; padding: 40px 34px 32px 34px; }
+
+  /* セクション見出し。@pageのmarginが全ページに自動反映されるので、
+     ページごとの手動divやfooterは不要（=フッターのページ番号は入れない） */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--mono-accent);
+    margin: 30px 0 5px 0;
+  }
+  .eyebrow.first { margin-top: 0; }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mono-accent); flex-shrink:0; }
+
+  h1.doc-title { font-size: 26px; font-weight: 800; margin: 0 0 6px 0; line-height: 1.35; }
+  h2.sec-title {
+    font-size: 19px; font-weight: 800; margin: 0 0 4px 0; line-height: 1.3;
+    break-after: avoid; break-inside: avoid; /* 見出しだけがページ末に取り残されるのを防ぐ */
+  }
+  .subtitle { font-size: 13px; color: var(--mono-sub); margin: 0 0 10px 0; font-weight: 500; line-height: 1.55; }
+  .rule { height: 1px; background: var(--mono-line); margin: 0 0 10px 0; }
+
+  .card {
+    background: var(--mono-card);
+    border: 1px solid var(--mono-line);
+    border-radius: 9px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.05);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    break-inside: avoid; /* カードの途中でページが割れるのを防ぐ */
+  }
+  .card.card-highlight { border-width: 2px; border-color: var(--mono-accent); background: var(--mono-accent-tint); }
+
+  /* バッジ番号は既定で黒(--mono-ink)。差し色は「本当に強調したいカード」だけで
+     使う原則を守るため、card-highlight内にあるときだけ赤くする */
+  .badge-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--mono-ink); color: #fff; font-size: 12px; font-weight: 800; flex-shrink: 0;
+  }
+  .card-highlight .badge-num { background: var(--mono-accent); }
+
+  ul.plain { margin: 0; padding: 0; list-style: none; }
+  ul.plain li { position: relative; padding-left: 14px; margin-bottom: 5px; font-size: 13.5px; line-height: 1.5; }
+  ul.plain li:last-child { margin-bottom: 0; }
+  ul.plain li::before {
+    content: ""; position: absolute; left: 0; top: 7px; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--mono-faint);
+  }
+  ul.plain li b { color: var(--mono-ink); }
+
+  .tint-box {
+    background: var(--mono-accent-tint); border-radius: 6px; padding: 6px 11px;
+    font-size: 12.5px; color: var(--mono-ink); font-weight: 600; display: inline-block;
+  }
+
+  .feat-title { font-size: 14.5px; font-weight: 800; margin: 0 0 4px 0; display:flex; align-items:center; gap:7px; line-height: 1.3; }
+  .feat-body { font-size: 13px; color: var(--mono-sub); line-height: 1.5; margin:0; }
+
+  .callout-strong {
+    background: var(--mono-accent-tint); border: 2px solid var(--mono-accent); border-radius: 10px;
+    padding: 12px 14px; font-size: 13.5px; font-weight: 700; line-height: 1.55; color: var(--mono-ink);
+    margin-bottom: 8px; break-inside: avoid;
+  }
+  .callout-strong .bracket-hl { color: var(--mono-accent); }
+
+  /* ===== 表組み風の詰めた行リスト（カタログ・一覧向け）。番号は装飾なのでグレー ===== */
+  .cat-section-title {
+    font-size: 13.5px; font-weight: 800; color: var(--mono-ink);
+    margin: 14px 0 4px 0; padding-top: 8px; border-top: 1px solid var(--mono-line);
+    break-after: avoid;
+  }
+  .cat-section-title.first { margin-top: 4px; padding-top: 0; border-top: none; }
+  .cat-row {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 4px 0; border-bottom: 1px solid var(--mono-line);
+    font-size: 12.5px; line-height: 1.45; break-inside: avoid;
+  }
+  .cat-num { width: 20px; flex-shrink: 0; font-weight: 800; color: var(--mono-faint); font-size: 11px; }
+  .cat-name { width: 168px; flex-shrink: 0; font-weight: 700; color: var(--mono-ink); }
+  .cat-desc { flex: 1; color: var(--mono-sub); }
+  .cat-desc b { color: var(--mono-ink); font-weight: 700; }
+
+  /* セクション/パートの区切り（ページを変えず、左に太いアクセントバーを立てて
+     視覚的な節目を作る。強制改ページはしない） */
+  .part-divider {
+    margin: 34px 0 26px 0; padding: 16px 0 16px 16px;
+    border-left: 4px solid var(--mono-accent); break-inside: avoid;
+  }
+  .part-divider h2 { font-size: 22px; margin-bottom: 8px; }
+  .part-divider p { font-size: 13px; color: var(--mono-sub); line-height: 1.6; margin: 0; }
+  .part-divider .coord { font-size: 11.5px; color: var(--mono-faint); margin-top: 8px; }
+
+  .doc-footnote {
+    margin-top: 26px; padding-top: 10px; border-top: 1px solid var(--mono-line);
+    font-size: 10.5px; color: var(--mono-faint); text-align: right;
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ===== 表紙（ページを分けず、文書の先頭にそのまま置く） ===== -->
+  <div class="eyebrow first"><span class="dot"></span>資料の種別・日付など</div>
+  <h1 class="doc-title">ドキュメントタイトルをここに</h1>
+  <p class="subtitle">サブタイトルで構成や対象を一言補足する</p>
+  <div style="margin:8px 0 4px 0;">
+    <span class="tint-box">タグ・バッジ</span>
+  </div>
+
+  <!-- ===== セクション1 ===== -->
+  <div class="eyebrow"><span class="dot"></span>セクション名</div>
+  <h2 class="sec-title">セクション見出し</h2>
+  <div class="rule"></div>
+  <p class="subtitle">セクションの導入文（省略可）</p>
+  <div class="card">
+    <div class="feat-title">📍 見出し</div>
+    <ul class="plain">
+      <li>箇条書き1行目。</li>
+      <li>箇条書き2行目。</li>
+    </ul>
+  </div>
+  <div class="card card-highlight">
+    <div class="feat-title">⚠️ 本当に注意してほしい項目だけハイライト</div>
+    <p class="feat-body" style="color:var(--mono-ink);">card-highlightは「警告・リスク・結論」など読み手が見逃すと困る箇所だけに使う。
+    情報を並べているだけのカードには使わない（差し色を使いすぎると強弱が失われる）。</p>
+  </div>
+
+  <!-- ===== 詰めた一覧・カタログが必要な場合 ===== -->
+  <div class="cat-section-title first">■ 分類名A（n種）</div>
+  <div class="cat-row"><span class="cat-num">1</span><span class="cat-name">項目名</span><span class="cat-desc">説明文。<b>強調したい語句</b>は太字にする（色は変えない）。</span></div>
+  <div class="cat-row"><span class="cat-num">2</span><span class="cat-name">項目名</span><span class="cat-desc">説明文。</span></div>
+
+  <div class="cat-section-title">■ 分類名B（n種）</div>
+  <div class="cat-row"><span class="cat-num">3</span><span class="cat-name">項目名</span><span class="cat-desc">説明文。</span></div>
+
+  <!-- ===== セクションの節目（大きな話題の切り替え。強制改ページはしない） ===== -->
+  <div class="part-divider">
+    <div class="eyebrow" style="margin:0 0 6px 0;"><span class="dot"></span>次の大セクション</div>
+    <h2>大セクションの見出し</h2>
+    <p>このセクションで何を扱うかを1〜3文で説明する。</p>
+  </div>
+
+  <!-- ===== セクション2 ===== -->
+  <div class="eyebrow"><span class="dot"></span>セクション名</div>
+  <h2 class="sec-title">核心メッセージを含むセクション</h2>
+  <div class="rule"></div>
+  <div class="callout-strong">
+    これだけは伝えたい核心メッセージ。<span class="bracket-hl">重要な語句</span>はアクセントカラーで強調する。
+  </div>
+  <div class="card">
+    <div class="feat-title"><span class="badge-num">1</span>手順・項目の見出し</div>
+    <p class="feat-body">説明文。<br><a href="#" style="color:var(--mono-accent); font-weight:700;">https://example.com/参考リンク</a></p>
+  </div>
+
+  <div class="doc-footnote">出典・発行元 ／ 作成日：YYYY-MM-DD</div>
+
+</div>
+</body>
+</html>

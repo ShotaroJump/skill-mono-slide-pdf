@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ゴールドスタンダード参考例</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Yu Gothic", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: #ddd;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  :root {
+    --mono-canvas: #F1F0EC;
+    --mono-card:   #FFFFFF;
+    --mono-ink:    #17160F;
+    --mono-sub:    #66655D;
+    --mono-faint:  #9B9A90;
+    --mono-line:   #E8E7E1;
+    --mono-accent: #FF3B1F;
+    --mono-accent-tint: #FFEFEA;
+  }
+
+  .slide {
+    width: 1280px;
+    height: 720px;
+    background: var(--mono-canvas);
+    color: var(--mono-ink);
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 20px auto;
+    padding: 46px 68px 40px 68px;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+  @media print {
+    .slide { margin: 0; box-shadow: none; }
+    body { background: #fff; }
+  }
+  @media screen {
+    .slide { box-shadow: 0 8px 30px rgba(0,0,0,0.18); margin-top: 20px; }
+  }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700;
+    letter-spacing: 0.04em; color: var(--mono-accent); margin-bottom: 10px; flex-shrink: 0;
+  }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mono-accent); }
+
+  h1.title { font-size: 40px; font-weight: 800; margin: 0 0 8px 0; line-height: 1.28; flex-shrink: 0; }
+  .subtitle { font-size: 19px; color: var(--mono-sub); margin: 0 0 20px 0; font-weight: 500; flex-shrink: 0; }
+  .rule { height: 1px; background: var(--mono-line); margin: 0 0 18px 0; flex-shrink: 0; }
+
+  .footer {
+    position: absolute; left: 68px; right: 68px; bottom: 22px; display: flex;
+    justify-content: space-between; align-items: center; font-size: 13px; color: var(--mono-faint);
+    font-weight: 600; letter-spacing: 0.03em;
+  }
+  .footer .section-tag { color: var(--mono-sub); }
+
+  .content { flex: 1; min-height: 0; }
+  .content.center { display: flex; flex-direction: column; justify-content: center; }
+  .content.stack { display: flex; flex-direction: column; justify-content: space-evenly; gap: 18px; }
+
+  .badge-num {
+    display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+    border-radius: 8px; background: var(--mono-accent); color: #fff; font-size: 17px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .section-block-title { font-size: 20px; font-weight: 800; margin: 0 0 12px 0; display:flex; align-items:center; gap:10px; }
+
+  /* 核心メッセージの強調ボックス */
+  .callout-strong {
+    background: var(--mono-accent-tint); border: 2px solid var(--mono-accent); border-radius: 14px;
+    padding: 22px 26px; font-size: 19px; font-weight: 700; line-height: 1.7; color: var(--mono-ink);
+  }
+  .callout-strong .bracket-hl { color: var(--mono-accent); }
+
+  /* A→Bのマッピング図 */
+  .mapping-row { display:flex; align-items:center; gap: 18px; padding: 10px 0; border-bottom: 1px solid var(--mono-line); }
+  .mapping-row:last-child { border-bottom: none; }
+  .bracket-tag {
+    font-size: 19px; font-weight: 800; color: var(--mono-ink); background: var(--mono-canvas);
+    border: 1px solid var(--mono-line); border-radius: 8px; padding: 8px 18px; min-width: 150px;
+    text-align: center; flex-shrink: 0;
+  }
+  .map-arrow { font-size: 20px; color: var(--mono-faint); font-weight: 800; flex-shrink:0; }
+  .color-badge { display:inline-flex; align-items:center; gap: 10px; font-size: 18px; font-weight: 700; }
+  .color-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink:0; }
+  .map-note { font-size: 15px; color: var(--mono-sub); font-weight: 500; }
+
+  /* プロセスフロー */
+  .flow { display:flex; align-items:stretch; gap: 16px; }
+  .flow-box {
+    flex: 1; background: var(--mono-card); border:1px solid var(--mono-line);
+    border-radius: 12px; padding: 20px 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    text-align:center; display: flex; flex-direction: column; justify-content: center;
+  }
+  .flow-box.flow-highlight { border-width: 2px; border-color: var(--mono-accent); background: var(--mono-accent-tint); }
+  .flow-box .ft { font-size: 18px; font-weight: 800; margin-bottom:6px;}
+  .flow-box .fs { font-size: 15px; color: var(--mono-sub); line-height:1.55;}
+  .flow-arrow { font-size: 26px; color: var(--mono-accent); font-weight: 900; flex-shrink:0; display:flex; align-items:center; }
+</style>
+</head>
+<body>
+
+<!--
+  ★★★ ゴールドスタンダード参考例 ★★★
+  ユーザー評（原文ママ）：
+  「今回のSlideで一番よかったのはこのページです。つまり具合とか、赤字の強調とか
+  黒字の太さ大きさとかかなり完璧。もちろんテーマによって色々違うかもしれないけど
+  デザイン的に①つ参考に。」
+
+  何が効いているか（新しいスライドを組むときの判断基準）：
+  1. 核心メッセージを callout-strong で最初に1つだけ提示する
+     （2px差し色枠 + 薄い差し色背景。文中の重要語句だけ bracket-hl で赤字にする。
+     地の文を黒太字にしすぎない＝赤字と黒太字を両方使いすぎない）
+  2. 見出しは badge-num（①②）+ section-block-title で番号立てし、
+     本文よりワンランク大きい太字（20px/800）で情報の階層を明確にする
+  3. 図解（mapping-row / flow）は「余白を持たせつつ密度がある」— カード間の
+     gapは16〜18px、カード内paddingは14〜20px程度に詰め、間延びさせない
+  4. 差し色は本当に1色だけ。最終結果（Googleチャットへ通知）だけ flow-highlight
+     で軽く強調し、途中経過のボックスは白のまま。全部を強調しない
+  5. 3ブロック（callout→事例①→事例②）を content.stack で均等配分し、
+     このページ単体で完結する情報量に絞っている（欲張って詰め込みすぎない）
+-->
+
+<div class="slide">
+  <div class="eyebrow"><span class="dot"></span>Googleカレンダー ・ 補足</div>
+  <h1 class="title" style="font-size:32px;">命名規則の【　】は、GASの自動処理トリガーになる</h1>
+  <p class="subtitle" style="margin-bottom:14px;">予定名を人が検索しやすくするだけでなく、プログラムが読み取れる"目印"にもなる</p>
+  <div class="rule" style="margin-bottom:16px;"></div>
+
+  <div class="content stack" style="gap:14px;">
+    <div class="callout-strong" style="padding:16px 24px; font-size:17px; line-height:1.6;">
+      GAS（Google Apps Script）は、予定タイトルの<span class="bracket-hl">【　】</span>部分を読み取り、条件分岐させて自動処理を実行できる。人が見て分かりやすいだけでなく、<span class="bracket-hl">プログラムやAIが検索・分類しやすい環境</span>にもなる。
+    </div>
+
+    <div>
+      <div class="section-block-title" style="margin-bottom:6px;"><span class="badge-num">①</span>石川の活用事例：予定タイトルで自動色分け</div>
+      <div class="mapping-row" style="padding:7px 0;">
+        <div class="bracket-tag">【会議】</div>
+        <div class="map-arrow">→</div>
+        <div class="color-badge"><span class="color-dot" style="background:#F6BF26;"></span>黄色ラベルを自動で付与</div>
+        <div class="map-note">GASが予定を判定してカレンダーの色を自動変更</div>
+      </div>
+      <div class="mapping-row" style="padding:7px 0;">
+        <div class="bracket-tag">【イベント】</div>
+        <div class="map-arrow">→</div>
+        <div class="color-badge"><span class="color-dot" style="background:#F09300;"></span>オレンジラベルを自動で付与</div>
+      </div>
+      <div class="mapping-row" style="padding:7px 0;">
+        <div class="bracket-tag">【期限】</div>
+        <div class="map-arrow">→</div>
+        <div class="color-badge"><span class="color-dot" style="background:#8E24AA;"></span>紫ラベルを自動で付与</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-block-title" style="margin-bottom:6px;"><span class="badge-num">②</span>訪問予定の自動アナウンス</div>
+      <div class="flow">
+        <div class="flow-box" style="padding:14px 16px;">
+          <div class="ft">【訪問】の予定</div>
+          <div class="fs">タイトルに区分をつけて登録</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="padding:14px 16px;">
+          <div class="ft">GASが毎週自動収集</div>
+          <div class="fs">決まった曜日の朝に集約</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box flow-highlight" style="padding:14px 16px;">
+          <div class="ft">Googleチャットへ通知</div>
+          <div class="fs">「同行していいよ！」の合図に</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span class="section-tag">Googleカレンダー</span><span>15</span></div>
+</div>
+
+</body>
+</html>
