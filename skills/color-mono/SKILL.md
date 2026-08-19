@@ -19,7 +19,7 @@ description: >
 このSkillを起点にすること。
 
 技術者向けの詳細仕様書や、ブランドカラーが別途指定されている案件には使わない。
-その場合は `color-dads`（デジタル庁DADS準拠）や `color-brand`（K-SOCKETブランドカラー）
+その場合は `color-dads`（デジタル庁DADS準拠）や `color-brand`（自社ブランドカラー）
 Skillを優先する。
 
 ## カラー定義
